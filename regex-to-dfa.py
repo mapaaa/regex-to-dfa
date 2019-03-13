@@ -52,14 +52,25 @@ def do_operation(op):
         root = Node(left, right)
         root.data = Data(operator=op)
         stack_nodes.append(root)
-    elif operator == '*':
+    elif op == '*':
         # kleene iteration
         child = stack_nodes.pop()
 
         root = Node(child)
         stack_nodes.append(root)
     else:
-        error('Unknown operator!')
+        raise ValueError('Unknown operator: ' + str(op))
+
+
+def priority(op):
+    if op == '|':
+        return 1
+    elif op == '.':
+        return 2
+    elif op == '*':
+        return 3
+    else:
+        raise ValueError('Unknown operator: ' + str(op))
 
 
 def make_expression_tree(regex, alphabet):
@@ -86,9 +97,14 @@ def make_expression_tree(regex, alphabet):
             node.data = Data(operand=regex[i], label=k)
             stack_nodes.append(node)
         if regex[i] in operators:
-            node = Node();
-            node.data = Data(operator=regex[i])
-            stack_nodes.append(node)
+            while len(stack) > 0:
+                top = stack.pop();
+                if top != '(' and priority(top) >= priority(regex[i]):
+                    do_operation(top)
+                else:
+                    stack.append(top)
+                    break
+            stack.append(regex[i])
 
     while len(stack) > 0:
         top = stack.pop()
