@@ -110,8 +110,7 @@ def make_expression_tree(regex, alphabet):
         top = stack.pop()
         do_operation(top)
 
-    tree = stack_nodes.pop();
-    return tree
+    return (stack_nodes.pop(), k)
 
 def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
@@ -123,7 +122,7 @@ def main():
     alphabet = args.alphabet
 
     regex = '(' + regex + ')#'  # mark the end of the expression
-    tree = make_expression_tree(regex, alphabet)
+    (tree, k) = make_expression_tree(regex, alphabet)
 
 
 if __name__ == '__main__':
