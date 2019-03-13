@@ -142,9 +142,11 @@ def compute_functions(node):
         if left != None:
             node.data.nullable |= left.get_nullable()
             node.data.first_pos += left.get_first_pos
+            node.data.last_pos += left.get_last_pos
         if right != None:
             node.data.nullable |= right.get_nullable()
             node.data.first_pos += right.get_first_pos
+            node.data.last_pos += right.get_last_pos
 
     elif op == '.':
         node.data.nullable = True
@@ -157,10 +159,16 @@ def compute_functions(node):
                 node.data.first_pos += left.get_first_pos
         if right != None:
             node.data.nullable &= right.get_nullable()
+            if right.get_nullable == True:
+                node.data.last_pos += left.get_first_pos
+                node.data.last_pos += right.get_first_pos
+            else:
+                node.data.last_pos += right.get_last_pos
 
     elif op == '*':
         node.data.nullable = 'True'
-        node.data.first_pos = left.get_first_pos
+        node.data.first_pos += left.get_first_pos
+        node.data.last_pos += left.get_last_pos
 
     else:
         raise ValueError('Unknown operator: ' + str(op))
