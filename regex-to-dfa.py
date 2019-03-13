@@ -21,6 +21,7 @@ def add_concatenation(regex, alphabet):
         # *a -> *.a
         # *( -> *.(
         # )( -> ).(
+        # )# -> ).#
         if regex[i] in alphabet:
             if regex[i+1] in alphabet:
                 new_regex += '.'
