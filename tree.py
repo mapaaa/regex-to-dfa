@@ -22,3 +22,6 @@ class Node:
 
     def get_ind(self):
         return self.data.ind
+
+    def get_nullable(self):
+        return self.data.nullable
