@@ -43,6 +43,24 @@ def add_concatenation(regex, alphabet):
     return new_regex
 
 
+def do_operation(op):
+    if op == '|' or op == '.':
+        # binary operators
+        right = stack_nodes.pop()
+        left = stack_nodes.pop()
+
+        root = Node(left, right)
+        root.data = Data(operator=op)
+        stack_nodes.append(root)
+    elif operator == '*':
+        # kleene iteration
+        child = stack_nodes.pop()
+
+        root = Node(child)
+        stack_nodes.append(root)
+    else:
+        error('Unknown operator!')
+
 
 def make_expression_tree(regex, alphabet):
     k = 0
@@ -50,6 +68,7 @@ def make_expression_tree(regex, alphabet):
 
     regex = add_concatenation(regex, alphabet)
     stack = [regex[0]]
+    global stack_nodes
     stack_nodes = []
     l = len(regex)
     for i in range(1, l):
@@ -60,7 +79,7 @@ def make_expression_tree(regex, alphabet):
                 top = stack.pop()
                 if top == '(':
                     break
-                #do_operation();
+                do_operation(top);
         if regex[i] in alphabet or regex[i] == '#':
             k += 1
             node = Node();
@@ -70,8 +89,13 @@ def make_expression_tree(regex, alphabet):
             node = Node();
             node.data = Data(operator=regex[i])
             stack_nodes.append(node)
-            
 
+    while len(stack) > 0:
+        top = stack.pop()
+        do_operation(top)
+
+    tree = stack_nodes.pop();
+    return tree
 
 def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
