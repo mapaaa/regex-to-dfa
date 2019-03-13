@@ -15,7 +15,7 @@ class Node:
         self.data = None
 
     def is_leaf(self):
-        return (self.left == None and self.right == right)
+        return (self.left == None and self.right == None)
 
     def get_operand(self):
         return self.data.operand

@@ -121,7 +121,7 @@ def make_expression_tree(regex, alphabet):
 
 
 def compute_functions(node):
-    if node.is_leaf:
+    if node.is_leaf == True:
         node.data.nullable = False
         node.data.first_pos.append(node.data.label)
         node.data.last_pos.append(node.data.label)
@@ -141,38 +141,57 @@ def compute_functions(node):
         node.data.nullable = False
         if left != None:
             node.data.nullable |= left.get_nullable()
-            node.data.first_pos += left.get_first_pos
-            node.data.last_pos += left.get_last_pos
+            node.data.first_pos += left.get_first_pos()
+            node.data.last_pos += left.get_last_pos()
         if right != None:
             node.data.nullable |= right.get_nullable()
-            node.data.first_pos += right.get_first_pos
-            node.data.last_pos += right.get_last_pos
+            node.data.first_pos += right.get_first_pos()
+            node.data.last_pos += right.get_last_pos()
 
     elif op == '.':
         node.data.nullable = True
         if left != None:
             node.data.nullable &= left.get_nullable()
             if left.get_nullable == True:
-                node.data.first_pos += left.get_first_pos
-                node.data.first_pos += right.get_first_pos
+                node.data.first_pos += left.get_first_pos()
+                node.data.first_pos += right.get_first_pos()
             else:
-                node.data.first_pos += left.get_first_pos
+                node.data.first_pos += left.get_first_pos()
         if right != None:
             node.data.nullable &= right.get_nullable()
             if right.get_nullable == True:
-                node.data.last_pos += left.get_first_pos
-                node.data.last_pos += right.get_first_pos
+                node.data.last_pos += left.get_first_pos()
+                node.data.last_pos += right.get_first_pos()
             else:
-                node.data.last_pos += right.get_last_pos
+                node.data.last_pos += right.get_last_pos()
 
     elif op == '*':
         node.data.nullable = 'True'
-        node.data.first_pos += left.get_first_pos
-        node.data.last_pos += left.get_last_pos
+        node.data.first_pos += left.get_first_pos()
+        node.data.last_pos += left.get_last_pos()
 
     else:
         raise ValueError('Unknown operator: ' + str(op))
- 
+
+
+def compute_follow_pos(node):
+    if node.is_leaf == True:
+        return
+
+    left = node.left
+    right = node.right
+    op = node.get_opeand()
+    if op == '.':
+        last_pos_c1 = left.get_last_pos()
+        first_pos_c2 = right.get_first_pos()
+        for i in range(0, len(last_pos_c1)):
+            follow_pos[last_pos_c1[i]] += first_pos_c2
+    elif op == '*':
+        last_pos_c = left.get_last_pos()
+        first_pos_c = left.get_first_pos()
+        for i in range(0, len(last_pos_c)):
+            follow_pos[last_pos_c[i]] += first_pos_c
+
 
 def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
@@ -187,9 +206,10 @@ def main():
     (tree, k, cnt_nodes) = make_expression_tree(regex, alphabet)
 
     global follow_pos
-    follow_pos = [] * (k + 1)
+    follow_pos = [[]] * (k + 1)
 
     compute_functions(tree)
+    compute_follow_pos(tree)
 
 if __name__ == '__main__':
     sys.exit(main());
