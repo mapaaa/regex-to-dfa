@@ -28,3 +28,6 @@ class Node:
 
     def get_first_pos(self):
         return self.data.first_pos
+
+    def get_last_pos(self):
+        return self.data.last_pos
