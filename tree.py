@@ -5,8 +5,8 @@ class Data:
         self.label = label
         self.ind = ind
         self.nullable = None
-        self.first_pos = None
-        self.last_pos = None
+        self.first_pos = []
+        self.last_pos = []
 
 class Node:
     def __init__(self, left=None, right=None):
@@ -25,3 +25,6 @@ class Node:
 
     def get_nullable(self):
         return self.data.nullable
+
+    def get_first_pos(self):
+        return self.data.first_pos
