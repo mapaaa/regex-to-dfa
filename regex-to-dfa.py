@@ -49,14 +49,18 @@ def do_operation(op):
         right = stack_nodes.pop()
         left = stack_nodes.pop()
 
+        global cnt_nodes
+        cnt_nodes = cnt_nodes + 1
         root = Node(left, right)
-        root.data = Data(operator=op)
+        root.data = Data(operator=op, ind=cnt_nodes)
         stack_nodes.append(root)
     elif op == '*':
         # kleene iteration
         child = stack_nodes.pop()
 
+        cnt_nodes += 1
         root = Node(child)
+        root.data = Data(ind=cnt_nodes)
         stack_nodes.append(root)
     else:
         raise ValueError('Unknown operator: ' + str(op))
@@ -75,6 +79,8 @@ def priority(op):
 
 def make_expression_tree(regex, alphabet):
     k = 0
+    global cnt_nodes
+    cnt_nodes = 0
     operators = ['*', '|', '.']
 
     regex = add_concatenation(regex, alphabet)
@@ -93,8 +99,9 @@ def make_expression_tree(regex, alphabet):
                 do_operation(top);
         if regex[i] in alphabet or regex[i] == '#':
             k += 1
+            cnt_nodes += 1
             node = Node();
-            node.data = Data(operand=regex[i], label=k)
+            node.data = Data(operand=regex[i], label=k, ind=cnt_nodes)
             stack_nodes.append(node)
         if regex[i] in operators:
             while len(stack) > 0:
@@ -110,7 +117,19 @@ def make_expression_tree(regex, alphabet):
         top = stack.pop()
         do_operation(top)
 
-    return (stack_nodes.pop(), k)
+    return (stack_nodes.pop(), k, cnt_nodes)
+
+
+def compute_functions(node):
+    left = node.left
+    right = node.right
+
+    if left != None:
+        compute_functions(left)
+
+    if right != None:
+        compute_functions(right)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
@@ -122,8 +141,18 @@ def main():
     alphabet = args.alphabet
 
     regex = '(' + regex + ')#'  # mark the end of the expression
-    (tree, k) = make_expression_tree(regex, alphabet)
+    (tree, k, cnt_nodes) = make_expression_tree(regex, alphabet)
 
+    global follow_pos
+    follow_pos = [] * (k + 1)
+    global nullable
+    nullable = [] * cnt_nodes
+    global first_pos
+    first_pos = [] * cnt_nodes
+    global last_pos
+    last_pos = [] * cnt_nodes
+
+    compute_functions(tree)
 
 if __name__ == '__main__':
     sys.exit(main());
