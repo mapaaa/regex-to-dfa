@@ -121,15 +121,36 @@ def make_expression_tree(regex, alphabet):
 
 
 def compute_functions(node):
-    left = node.left
-    right = node.right
+    if node.is_leaf:
+        node.data.nullable = False
+        return
 
-    if left != None:
-        compute_functions(left)
+    if node.left != None:
+        compute_functions(node.left)
 
-    if right != None:
-        compute_functions(right)
+    if node.right != None:
+        compute_functions(node.right)
 
+    op = node.get_operand()
+    if op == '|':
+        if node.left != None and node.right != None:
+            node.data.nullable = node.left.get_nullable() | node.right.get_nullable()
+        elif node.left != None:
+            node.data.nullable = node.left.get_nullable()
+        else:
+            node.data.nullable = node.right.get_nullable()
+    elif op == '.':
+        if node.left != None and node.right != None:
+            node.data.nullable = node.left.get_nullable() & node.right.get_nullable()
+        elif node.left != None:
+            node.data.nullable = node.left.get_nullable()
+        else:
+            node.data.nullable = node.right.get_nullable()
+    elif op == '*':
+        node.data.nullable = 'True'
+    else:
+        raise ValueError('Unknown operator: ' + str(op))
+ 
 
 def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
@@ -145,12 +166,6 @@ def main():
 
     global follow_pos
     follow_pos = [] * (k + 1)
-    global nullable
-    nullable = [] * cnt_nodes
-    global first_pos
-    first_pos = [] * cnt_nodes
-    global last_pos
-    last_pos = [] * cnt_nodes
 
     compute_functions(tree)
 
