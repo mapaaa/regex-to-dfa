@@ -8,17 +8,29 @@ class Data:
         self.first_pos = []
         self.last_pos = []
 
+    def show(self):
+        s = ''
+        if self.operator:
+            s += ' operator = ' + str(self.operator)
+        if self.operand:
+            s += ' operand = ' + str(self.operand)
+        if self.label:
+            s += ' label = ' + str(self.label)
+        if self.ind:
+            s += ' ind = ' + str(self.ind)
+        return s
+
 class Node:
     def __init__(self, left=None, right=None):
-        self.left = None
-        self.right = None
+        self.left = left
+        self.right = right
         self.data = None
 
     def is_leaf(self):
         return (self.left == None and self.right == None)
 
-    def get_operand(self):
-        return self.data.operand
+    def get_operator(self):
+        return self.data.operator
 
     def get_ind(self):
         return self.data.ind

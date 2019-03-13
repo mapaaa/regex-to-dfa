@@ -54,13 +54,15 @@ def do_operation(op):
         root = Node(left, right)
         root.data = Data(operator=op, ind=cnt_nodes)
         stack_nodes.append(root)
+        print(root.data.show())
     elif op == '*':
         # kleene iteration
         child = stack_nodes.pop()
 
         cnt_nodes += 1
         root = Node(child)
-        root.data = Data(ind=cnt_nodes)
+        root.data = Data(operator=op, ind=cnt_nodes)
+        print(root.data.show())
         stack_nodes.append(root)
     else:
         raise ValueError('Unknown operator: ' + str(op))
@@ -103,6 +105,7 @@ def make_expression_tree(regex, alphabet):
             node = Node();
             node.data = Data(operand=regex[i], label=k, ind=cnt_nodes)
             stack_nodes.append(node)
+            print(node.data.show())
         if regex[i] in operators:
             while len(stack) > 0:
                 top = stack.pop();
@@ -121,7 +124,7 @@ def make_expression_tree(regex, alphabet):
 
 
 def compute_functions(node):
-    if node.is_leaf == True:
+    if node.is_leaf() == True:
         node.data.nullable = False
         node.data.first_pos.append(node.data.label)
         node.data.last_pos.append(node.data.label)
@@ -136,29 +139,29 @@ def compute_functions(node):
     if right != None:
         compute_functions(node.right)
 
-    op = node.get_operand()
+    op = node.get_operator()
     if op == '|':
         node.data.nullable = False
         if left != None:
-            node.data.nullable |= left.get_nullable()
+            node.data.nullable = node.data.nullable or left.get_nullable()
             node.data.first_pos += left.get_first_pos()
             node.data.last_pos += left.get_last_pos()
         if right != None:
-            node.data.nullable |= right.get_nullable()
+            node.data.nullable = node.data.nullable or right.get_nullable()
             node.data.first_pos += right.get_first_pos()
             node.data.last_pos += right.get_last_pos()
 
     elif op == '.':
         node.data.nullable = True
         if left != None:
-            node.data.nullable &= left.get_nullable()
+            node.data.nullable = node.data.nullable and left.get_nullable()
             if left.get_nullable == True:
                 node.data.first_pos += left.get_first_pos()
                 node.data.first_pos += right.get_first_pos()
             else:
                 node.data.first_pos += left.get_first_pos()
         if right != None:
-            node.data.nullable &= right.get_nullable()
+            node.data.nullable = node.data.nullable and right.get_nullable()
             if right.get_nullable == True:
                 node.data.last_pos += left.get_first_pos()
                 node.data.last_pos += right.get_first_pos()
@@ -175,12 +178,12 @@ def compute_functions(node):
 
 
 def compute_follow_pos(node):
-    if node.is_leaf == True:
+    if node.is_leaf() == True:
         return
 
     left = node.left
     right = node.right
-    op = node.get_opeand()
+    op = node.get_operator()
     if op == '.':
         last_pos_c1 = left.get_last_pos()
         first_pos_c2 = right.get_first_pos()
