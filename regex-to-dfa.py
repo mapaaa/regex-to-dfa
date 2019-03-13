@@ -123,31 +123,45 @@ def make_expression_tree(regex, alphabet):
 def compute_functions(node):
     if node.is_leaf:
         node.data.nullable = False
+        node.data.first_pos.append(node.data.label)
+        node.data.last_pos.append(node.data.label)
         return
 
-    if node.left != None:
+    left = node.left
+    right = node.right
+
+    if left != None:
         compute_functions(node.left)
 
-    if node.right != None:
+    if right != None:
         compute_functions(node.right)
 
     op = node.get_operand()
     if op == '|':
-        if node.left != None and node.right != None:
-            node.data.nullable = node.left.get_nullable() | node.right.get_nullable()
-        elif node.left != None:
-            node.data.nullable = node.left.get_nullable()
-        else:
-            node.data.nullable = node.right.get_nullable()
+        node.data.nullable = False
+        if left != None:
+            node.data.nullable |= left.get_nullable()
+            node.data.first_pos += left.get_first_pos
+        if right != None:
+            node.data.nullable |= right.get_nullable()
+            node.data.first_pos += right.get_first_pos
+
     elif op == '.':
-        if node.left != None and node.right != None:
-            node.data.nullable = node.left.get_nullable() & node.right.get_nullable()
-        elif node.left != None:
-            node.data.nullable = node.left.get_nullable()
-        else:
-            node.data.nullable = node.right.get_nullable()
+        node.data.nullable = True
+        if left != None:
+            node.data.nullable &= left.get_nullable()
+            if left.get_nullable == True:
+                node.data.first_pos += left.get_first_pos
+                node.data.first_pos += right.get_first_pos
+            else:
+                node.data.first_pos += left.get_first_pos
+        if right != None:
+            node.data.nullable &= right.get_nullable()
+
     elif op == '*':
         node.data.nullable = 'True'
+        node.data.first_pos = left.get_first_pos
+
     else:
         raise ValueError('Unknown operator: ' + str(op))
  
