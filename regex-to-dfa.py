@@ -245,6 +245,8 @@ def main():
             dfa.add_transition(dfa.get_state(p), ch, new_state)
         p += 1
 
+    print(dfa)
+
 
 if __name__ == '__main__':
     sys.exit(main());

@@ -13,18 +13,30 @@ class State:
         return self.is_final
 
 class Dfa:
-    def __init__(self, sigma=None, q0=None, F=None):
+    def __init__(self, sigma=None, q0=None):
        self.Q = []
        self.sigma = sigma
        self.delta = {}
        self.q0 = q0
-       self.F = F
+       self.F = []
        self.cnt_nodes = 0
+
+    def __str__(self):
+        s = 'Q = ['
+        for state in self.Q:
+            s += str(state) + ', '
+        s += ']\n'
+        s += 'sigma = ' + str(self.sigma) + '\n'
+        s += 'q0 = ' + str(self.q0.label) + '\n'
+        s += 'F = ' + str(self.F)
+        return s
 
     def new_state(self, pos, is_final=False):
         self.cnt_nodes += 1
         state = State(self.cnt_nodes, pos, is_final)
         self.Q.append(state)
+        if is_final == True:
+            self.F.append(state)
         return state
 
     def get_pos(self, p):
