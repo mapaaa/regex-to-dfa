@@ -14,7 +14,7 @@ def add_concatenation(regex, alphabet):
     new_regex = ''
     l = len(regex)
     for i in range(0, l-1):
-        new_regex += regex[i]
+        new_regex = new_regex + regex[i]
         # Accepted operators are: '(', ')', '.', '*', '|'
         # so we should add '.' to the following situations:
         # ab -> a.b
@@ -26,23 +26,23 @@ def add_concatenation(regex, alphabet):
         # )# -> ).#
         if regex[i] in alphabet:
             if regex[i+1] in alphabet:
-                new_regex += '.'
+                new_regex = new_regex + '.'
             elif regex[i+1] == '(':
-                new_regex += '.'
+                new_regex = new_regex + '.'
         elif regex[i] == ')':
             if regex[i+1] in alphabet:
-                new_regex += '.'
+                new_regex = new_regex + '.'
             elif regex[i+1] == '(':
-                new_regex += '.'
+                new_regex = new_regex + '.'
             elif regex[i+1] == '#':
-                new_regex += '.'
+                new_regex = new_regex + '.'
         elif regex[i] == '*':
             if regex[i+1] in alphabet:
-                new_regex += '.'
+                new_regex = new_regex + '.'
             elif regex[i+1] == '(':
-                new_regex += '.'
+                new_regex = new_regex + '.'
     
-    new_regex += regex[l-1];
+    new_regex = new_regex + regex[l-1];
     return new_regex
 
 
@@ -128,6 +128,7 @@ def compute_functions(node):
         node.data.nullable = False
         node.data.first_pos.append(node.data.label)
         node.data.last_pos.append(node.data.label)
+        print(node)
         return
 
     left = node.left
@@ -144,37 +145,39 @@ def compute_functions(node):
         node.data.nullable = False
         if left != None:
             node.data.nullable = node.data.nullable or left.get_nullable()
-            node.data.first_pos += left.get_first_pos()
-            node.data.last_pos += left.get_last_pos()
+            node.data.first_pos = node.data.first_pos + left.get_first_pos()
+            node.data.last_pos = node.data.last_pos + left.get_last_pos()
         if right != None:
             node.data.nullable = node.data.nullable or right.get_nullable()
-            node.data.first_pos += right.get_first_pos()
-            node.data.last_pos += right.get_last_pos()
+            node.data.first_pos = node.data.first_pos + right.get_first_pos()
+            node.data.last_pos = node.data.last_pos + right.get_last_pos()
 
     elif op == '.':
         node.data.nullable = True
         if left != None:
             node.data.nullable = node.data.nullable and left.get_nullable()
-            if left.get_nullable == True:
-                node.data.first_pos += left.get_first_pos()
-                node.data.first_pos += right.get_first_pos()
+            ans = left.get_nullable()
+            if left.get_nullable() == True:
+                node.data.first_pos = node.data.first_pos + left.get_first_pos()
+                node.data.first_pos = node.data.first_pos + right.get_first_pos()
             else:
-                node.data.first_pos += left.get_first_pos()
+                node.data.first_pos = node.data.first_pos + left.get_first_pos()
         if right != None:
             node.data.nullable = node.data.nullable and right.get_nullable()
-            if right.get_nullable == True:
-                node.data.last_pos += left.get_first_pos()
-                node.data.last_pos += right.get_first_pos()
+            if right.get_nullable() == True:
+                node.data.last_pos = node.data.last_pos + left.get_last_pos()
+                node.data.last_pos = node.data.last_pos + right.get_last_pos()
             else:
-                node.data.last_pos += right.get_last_pos()
+                node.data.last_pos = node.data.last_pos + right.get_last_pos()
 
     elif op == '*':
-        node.data.nullable = 'True'
-        node.data.first_pos += left.get_first_pos()
-        node.data.last_pos += left.get_last_pos()
+        node.data.nullable = True
+        node.data.first_pos = node.data.first_pos + left.get_first_pos()
+        node.data.last_pos = node.data.last_pos + left.get_last_pos()
 
     else:
         raise ValueError('Unknown operator: ' + str(op))
+    print(node)
 
 
 def compute_follow_pos(node):
@@ -189,12 +192,12 @@ def compute_follow_pos(node):
         last_pos_c1 = left.get_last_pos()
         first_pos_c2 = right.get_first_pos()
         for i in range(0, len(last_pos_c1)):
-            follow_pos[last_pos_c1[i]] += first_pos_c2
+            follow_pos[last_pos_c1[i]] = follow_pos[last_pos_c1[i]] + first_pos_c2
     elif op == '*':
         last_pos_c = left.get_last_pos()
         first_pos_c = left.get_first_pos()
         for i in range(0, len(last_pos_c)):
-            follow_pos[last_pos_c[i]] += first_pos_c
+            follow_pos[last_pos_c[i]] = follow_pos[last_pos_c[i]] + first_pos_c
 
     if left != None:
         compute_follow_pos(left)
@@ -222,29 +225,36 @@ def main():
     compute_functions(tree)
     compute_follow_pos(tree)
 
+    for i in range(1, k+1):
+        follow_pos[i] = set(follow_pos[i])
+
+
     # Q, sigma, delta, q0, F
     dfa = Dfa(sigma=alphabet)
     is_final = False
-    if cnt_nodes in tree.get_first_pos():
+    if k in tree.get_first_pos():
         is_final = True
     dfa.q0 = dfa.new_state(tree.get_first_pos(), is_final)
     p = 0 
     u = 0
     while p <= u:
         for ch in alphabet:
-            all_follow_pos = []
+            all_follow_pos = set([])
             for x in dfa.get_pos(p):
                 if leaf[x] == ch:
-                    all_follow_pos += follow_pos[x]
-            if len(all_follow_pos) != 0 and dfa.is_state_already(all_follow_pos) == False:
-                if_final = False
-                if cnt_nodes in all_follow_pos:
-                    is_final = True
-                new_state = dfa.new_state(all_follow_pos, is_final)
-                u += 1
-            dfa.add_transition(dfa.get_state(p), ch, new_state)
+                    all_follow_pos = all_follow_pos.union(follow_pos[x])
+            if len(all_follow_pos) != 0:
+                if dfa.is_state_already(all_follow_pos) == False:
+                    is_final = False
+                    if k in all_follow_pos:
+                        is_final = True
+                    new_state = dfa.new_state(all_follow_pos, is_final)
+                    dfa.add_transition(dfa.get_state(p), ch, new_state)
+                    u += 1
+                else:
+                    state = dfa.search_state(all_follow_pos)
+                    dfa.add_transition(dfa.get_state(p), ch, state)
         p += 1
-
     print(dfa)
 
 

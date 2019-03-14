@@ -9,9 +9,6 @@ class State:
         s = 'label = ' + str(self.label) + ' is_final = ' + str(self.is_final) + ' pos = ' + str(self.pos)
         return s
 
-    def is_final(self):
-        return self.is_final
-
 class Dfa:
     def __init__(self, sigma=None, q0=None):
        self.Q = []
@@ -28,7 +25,14 @@ class Dfa:
         s += ']\n'
         s += 'sigma = ' + str(self.sigma) + '\n'
         s += 'q0 = ' + str(self.q0.label) + '\n'
-        s += 'F = ' + str(self.F)
+        s += 'F = ' + '\n'
+        for state in self.F:
+            s += '-->' + str(state) + '\n'
+        s += 'delta = ' + '\n'
+        for (src, value) in self.delta.items():
+            for dst in value:
+                s += '-->' + str(src) + ', ' + str(dst[0]) + ' -> ' + str(dst[1])
+                s += '\n'
         return s
 
     def new_state(self, pos, is_final=False):
@@ -43,13 +47,21 @@ class Dfa:
         return self.Q[p].pos
 
     def add_transition(self, src_state, ch, dst_state):
-        self.delta[src_state] = (ch, dst_state)
+        if src_state in self.delta:
+            self.delta[src_state].append((ch, dst_state))
+        else:
+            self.delta[src_state] = [(ch, dst_state)]
 
     def is_state_already(self, pos_state):
         for state in self.Q:
             if set(state.pos) == set(pos_state):
                 return True
         return False
+
+    def search_state(self, pos_state):
+        for state in self.Q:
+            if set(state.pos) == set(pos_state):
+                return state
 
     def get_state(self, p):
         return self.Q[p]

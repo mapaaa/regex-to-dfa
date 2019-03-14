@@ -14,10 +14,11 @@ class Data:
             s += ' operator = ' + str(self.operator)
         if self.operand:
             s += ' operand = ' + str(self.operand)
-        if self.label:
-            s += ' label = ' + str(self.label)
-        if self.ind:
-            s += ' ind = ' + str(self.ind)
+        s += ' label = ' + str(self.label)
+        s += ' ind = ' + str(self.ind)
+        s += ' nullable = ' + str(self.nullable)
+        s += ' first_pos = ' + str(self.first_pos)
+        s += ' last_pos = ' + str(self.last_pos)
         return s
 
 class Node:
@@ -25,6 +26,11 @@ class Node:
         self.left = left
         self.right = right
         self.data = None
+
+    def __str__(self):
+        s = ''
+        s = self.data.show() #super unsafe
+        return s
 
     def is_leaf(self):
         return (self.left == None and self.right == None)
