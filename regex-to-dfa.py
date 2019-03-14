@@ -3,6 +3,8 @@
 import argparse
 import sys
 
+from dfa import Dfa
+from dfa import State
 from tree import Data
 from tree import Node
 
@@ -55,7 +57,6 @@ def do_operation(op):
         root = Node(left, right)
         root.data = Data(operator=op, ind=cnt_nodes)
         stack_nodes.append(root)
-        print(root.data.show())
     elif op == '*':
         # kleene iteration
         child = stack_nodes.pop()
@@ -63,7 +64,6 @@ def do_operation(op):
         cnt_nodes += 1
         root = Node(child)
         root.data = Data(operator=op, ind=cnt_nodes)
-        print(root.data.show())
         stack_nodes.append(root)
     else:
         raise ValueError('Unknown operator: ' + str(op))
@@ -106,7 +106,6 @@ def make_expression_tree(regex, alphabet):
             node = Node();
             node.data = Data(operand=regex[i], label=k, ind=cnt_nodes)
             stack_nodes.append(node)
-            print(node.data.show())
         if regex[i] in operators:
             while len(stack) > 0:
                 top = stack.pop();
@@ -180,6 +179,7 @@ def compute_functions(node):
 
 def compute_follow_pos(node):
     if node.is_leaf() == True:
+        leaf[node.data.label] = node.data.operand
         return
 
     left = node.left
@@ -196,6 +196,11 @@ def compute_follow_pos(node):
         for i in range(0, len(last_pos_c)):
             follow_pos[last_pos_c[i]] += first_pos_c
 
+    if left != None:
+        compute_follow_pos(left)
+    if right != None:
+        compute_follow_pos(right)
+
 
 def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
@@ -211,9 +216,35 @@ def main():
 
     global follow_pos
     follow_pos = [[]] * (k + 1)
+    global leaf
+    leaf = [0] * (k + 1)
 
     compute_functions(tree)
     compute_follow_pos(tree)
+
+    # Q, sigma, delta, q0, F
+    dfa = Dfa(sigma=alphabet)
+    is_final = False
+    if cnt_nodes in tree.get_first_pos():
+        is_final = True
+    dfa.q0 = dfa.new_state(tree.get_first_pos(), is_final)
+    p = 0 
+    u = 0
+    while p <= u:
+        for ch in alphabet:
+            all_follow_pos = []
+            for x in dfa.get_pos(p):
+                if leaf[x] == ch:
+                    all_follow_pos += follow_pos[x]
+            if len(all_follow_pos) != 0 and dfa.is_state_already(all_follow_pos) == False:
+                if_final = False
+                if cnt_nodes in all_follow_pos:
+                    is_final = True
+                new_state = dfa.new_state(all_follow_pos, is_final)
+                u += 1
+            dfa.add_transition(dfa.get_state(p), ch, new_state)
+        p += 1
+
 
 if __name__ == '__main__':
     sys.exit(main());
