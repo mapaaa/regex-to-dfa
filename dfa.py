@@ -5,3 +5,11 @@ class State:
 
     def is_final(self):
         return self.is_final
+
+class Dfa:
+    def __init__(self, q=None, sigma=None, delta=None, q0=None, f=None):
+       self.q = q
+       self.sigma = sigma
+       self.delta = delta
+       self.q0 = q0
+       self.f = f
