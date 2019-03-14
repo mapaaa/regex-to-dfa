@@ -13,8 +13,8 @@ class State:
         return self.is_final
 
 class Dfa:
-    def __init__(self, Q=None, sigma=None, q0=None, F=None):
-       self.Q = Q
+    def __init__(self, sigma=None, q0=None, F=None):
+       self.Q = []
        self.sigma = sigma
        self.delta = {}
        self.q0 = q0
@@ -24,7 +24,7 @@ class Dfa:
     def new_state(self, pos, is_final=False):
         self.cnt_nodes += 1
         state = State(self.cnt_nodes, pos, is_final)
-        self.Q += state
+        self.Q.append(state)
         return state
 
     def get_pos(self, p):
@@ -32,3 +32,12 @@ class Dfa:
 
     def add_transition(self, src_state, ch, dst_state):
         self.delta[src_state] = (ch, dst_state)
+
+    def is_state_already(self, pos_state):
+        for state in self.Q:
+            if set(state.pos) == set(pos_state):
+                return True
+        return False
+
+    def get_state(self, p):
+        return self.Q[p]
