@@ -207,10 +207,14 @@ def main():
     parser = argparse.ArgumentParser(description='Tool to transform regex to DFA')
     parser.add_argument('alphabet', type=str, help='Alphabet of REGEX.')
     parser.add_argument('regex', type=str, help='Regular expression.')
+    parser.add_argument('--visualizer', action='store_true', help='Add this flag for printing the DFA in graphviz format.')
 
     args = parser.parse_args()
     regex = args.regex
     alphabet = args.alphabet
+
+    global  visualizer
+    visualizer = args.visualizer
 
     regex = '(' + regex + ')#'  # mark the end of the expression
     (tree, k, cnt_nodes) = make_expression_tree(regex, alphabet)
@@ -252,7 +256,11 @@ def main():
                     state = dfa.search_state(all_follow_pos)
                     dfa.add_transition(dfa.get_state(p), ch, state)
         p += 1
-    print(dfa)
+    if visualizer == True:
+        f = open('dfa.out', 'w')
+        f.write(dfa.str_graphviz_web_format())
+    else:
+        print(dfa)
 
 
 if __name__ == '__main__':
