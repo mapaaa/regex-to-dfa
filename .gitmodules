@@ -1,0 +1,3 @@
+[submodule "graphviz_web"]
+	path = graphviz_web
+	url = https://github.com/hythof/graphviz_web.git
