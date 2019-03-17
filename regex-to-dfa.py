@@ -128,7 +128,6 @@ def compute_functions(node):
         node.data.nullable = False
         node.data.first_pos.append(node.data.label)
         node.data.last_pos.append(node.data.label)
-        print(node)
         return
 
     left = node.left
@@ -177,7 +176,6 @@ def compute_functions(node):
 
     else:
         raise ValueError('Unknown operator: ' + str(op))
-    print(node)
 
 
 def compute_follow_pos(node):
@@ -227,7 +225,6 @@ def main():
 
     for i in range(1, k+1):
         follow_pos[i] = set(follow_pos[i])
-
 
     # Q, sigma, delta, q0, F
     dfa = Dfa(sigma=alphabet)
