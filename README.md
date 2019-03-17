@@ -7,8 +7,6 @@ This tool receives as input:
 
 Supported operators are: union, concatenation and Kleene iteration(*)
 
-## How the DFA is constructed
-
 ## Usage
 
 ```bash
