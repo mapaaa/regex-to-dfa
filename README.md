@@ -24,7 +24,7 @@ optional argument:
 
 To actually visualize the DFA you need to:
   - run the [graphivz_web](https://github.com/hythof/graphviz_web) tool
-  - copy paste the content of the dfa.out file in the online tool
+  - copy paste the content of the `dfa.out` file in the online tool
 
 ## Example
 ```bash
